@@ -10,22 +10,22 @@ function demoSelect() {
     const DemoSelect = () => div(
         p("VanJS Demos"),
         select({onchange:(ev) => {
-            // Get index of selected option
-            const index = ev.target.selectedIndex;
-            if (index === undefined) {
-                return;
-            }
-            // Remove last demo from the DOM
-            if (lastDemo) {
-                document.body.removeChild(lastDemo);
-                lastDemo = null;
-            }
-            // Index 0 corresponds to the 'Select demo option'
-            if (index == 0) {
-                return;
-            }
-            // Calls corresponding demo function
-            lastDemo = demos[index-1].func();
+                // Get index of selected option
+                const index = ev.target.selectedIndex;
+                if (index === undefined) {
+                    return;
+                }
+                // Remove last demo from the DOM
+                if (lastDemo) {
+                    document.body.removeChild(lastDemo);
+                    lastDemo = null;
+                }
+                // Index 0 corresponds to the 'Select demo option'
+                if (index == 0) {
+                    return;
+                }
+                // Calls corresponding demo function
+                lastDemo = demos[index-1].func();
             }},
             // Start of select options
             option("Select a demo"),
@@ -316,6 +316,115 @@ function demo13() {
     return demo;
 }
 demos.push({title:"State-derived properties", func: demo13});
+
+//
+// van._(...) to escape on... event handlers
+//
+function demo14() {
+    const {button, option, select, span} = van.tags
+    const Counter = () => {
+        const counter = van.state(0)
+        const action = van.state("👍")
+        return span(
+            "❤️ ", counter, " ",
+            select({oninput: e => action.val = e.target.value, value: action},
+                option({value: "👍"}, "👍"),
+                option({value: "👎"}, "👎"),
+            ), " ",
+            button({onclick: van._(() => action.val === "👍" ? () => ++counter.val : () => --counter.val)}, "Run"),
+        )
+    }
+    const demo = Counter();
+    van.add(document.body, demo);
+    return demo;
+}
+demos.push({title:"van_() to escape event handlers", func: demo14});
+
+//
+// State derived child nodes
+//
+function demo15() {
+    const {input, li, option, select, span, ul} = van.tags
+    const SortedList = () => {
+        const items = van.state("a,b,c"), sortedBy = van.state("Ascending")
+        return span(
+            "Comma-separated list: ",
+            input({oninput: e => items.val = e.target.value, type: "text", value: items}), " ",
+            select({oninput: e => sortedBy.val = e.target.value, value: sortedBy},
+                option({value: "Ascending"}, "Ascending"),
+                option({value: "Descending"}, "Descending"),
+            ),
+            // A State-derived child node
+            () => sortedBy.val === "Ascending" ?
+            ul(items.val.split(",").sort().map(i => li(i))) :
+            ul(items.val.split(",").sort().reverse().map(i => li(i))),
+        )
+    }
+    const demo = SortedList();
+    van.add(document.body, demo);
+    return demo;
+}
+demos.push({title:"State-derived child nodes", func: demo15});
+
+//
+// Removing a DOM node
+//
+function demo16() {
+    const {a, button, div, input, li, ul} = van.tags
+    const ListItem = ({text}) => {
+        const deleted = van.state(false)
+        return () => deleted.val ? null : li( text, a({onclick: () => deleted.val = true}, "❌"),)
+    }
+
+    const EditableList = () => {
+        const listDom = ul()
+        const textDom = input({type: "text"})
+        return div(
+            textDom, " ",
+            button({onclick: () => van.add(listDom, ListItem({text: textDom.value}))}, "➕"),
+            listDom,
+        )
+    }
+    const demo = EditableList();
+    van.add(document.body, demo);
+    return demo;
+}
+demos.push({title:"Removing a DOM node", func: demo16});
+
+//
+// Polymorphic binding
+//
+function demo17() {
+    const {button, span} = van.tags
+    const Button = ({color, text, onclick}) =>
+        button({style: () => `background-color: ${van.val(color)};`, onclick}, text)
+
+    const App = () => {
+        const colorState = van.state("green")
+        const textState = van.state("Turn Red")
+        const turnRed = () => {
+            colorState.val = "red"
+            textState.val = "Turn Green"
+            onclickState.val = turnGreen
+        }
+        const turnGreen = () => {
+            colorState.val = "green"
+            textState.val = "Turn Red"
+            onclickState.val = turnRed
+        }
+        const onclickState = van.state(turnRed)
+
+        return span(
+            Button({color: "yellow", text: "Click Me", onclick: () => alert("Clicked")}), " ",
+            Button({color: colorState, text: textState, onclick: onclickState}),
+        )
+    }
+    const demo = App();
+    van.add(document.body, demo);
+    return demo;
+}
+demos.push({title:"Polymorphic binding", func: demo17});
+
 
 
 //-----------------------------------------------------------------------------
