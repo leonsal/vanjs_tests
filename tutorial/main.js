@@ -269,6 +269,55 @@ function demo11() {
 }
 demos.push({title:"State binding", func: demo11});
 
+
+//
+// State objects as child nodes
+//
+function demo12() {
+    const {button, span} = van.tags
+    const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
+    const Timer = ({totalSecs}) => {
+        const secs = van.state(totalSecs)
+        return span(
+            secs, "s ",
+            button({onclick: async () => {
+                while (secs.val > 0) await sleep(1000), --secs.val
+                    await sleep(10) // Wait briefly for DOM update
+                    alert("⏰: Time is up")
+                    secs.val = totalSecs
+                }
+            }, "Start"),
+        )
+    }
+    const demo = Timer({totalSecs:5})
+    van.add(document.body, demo)
+    return demo;
+}
+demos.push({title:"State objects as child nodes", func: demo12});
+
+//
+// State-derived properties
+//
+function demo13() {
+    const {input, option, select, span} = van.tags
+    const FontPreview = () => {
+        const size = van.state(16), color = van.state("black")
+        return span(
+            "Size: ",
+            input({type: "range", min: 10, max: 36, value: size, oninput: e => size.val = e.target.value}),
+            " Color: ",
+            select({oninput: e => color.val = e.target.value, value: color}, ["black", "blue", "green", "red", "brown"] .map(c => option({value: c}, c)),),
+            // The <span> element below has a state-derived property `style`
+            span({style: () => `font-size: ${size.val}px; color: ${color.val};`}, " Hello 🍦VanJS"),
+        )
+    }
+    const demo = FontPreview();
+    van.add(document.body, demo);
+    return demo;
+}
+demos.push({title:"State-derived properties", func: demo13});
+
+
 //-----------------------------------------------------------------------------
 // Show demo selection
 //-----------------------------------------------------------------------------
