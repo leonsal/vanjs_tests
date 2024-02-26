@@ -7,11 +7,14 @@ let lastDemo = null;
 // Show drop down for selecting demo to run
 function demoSelect() {
     const {div, p, select, option, hr} = van.tags;
+    // const currentDemoIdx = van.state(0);
     const DemoSelect = () => div(
         p("VanJS Demos"),
         select({onchange:(ev) => {
+
                 // Get index of selected option
-                const index = ev.target.selectedIndex;
+                // const index = ev.target.selectedIndex;
+                // currentDemoIdx.value = index-1;
                 if (index === undefined) {
                     return;
                 }
@@ -33,6 +36,7 @@ function demoSelect() {
             demos.map((it) => option(it.title)),
         ),
         hr(),
+
     );
     van.add(document.body, DemoSelect())
 }
