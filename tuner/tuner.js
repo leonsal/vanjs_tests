@@ -1,6 +1,6 @@
 import van from "./van-1.2.8.debug.js"
 
-const {div, label, span,input, button} = van.tags;
+const {div, label, span} = van.tags;
 
 // freqState  : Van state with the Tuner frequency
 // ndigits    : Total number of digits
@@ -42,15 +42,15 @@ export default function Tuner ({freqState, ndigits, sep, fontSize, suffix, leftO
     // Digit at position 0 is the least significant.
     const Digit = (pos) => {
 
-        // Returns derivedState from freqState which contains the value of the single digit.
+        // Returns derivedState from freqState which contains the value [0,9] of the single digit.
         // If freqState changes, digitState must be recalculated.
         const digitState = van.derive(() => {
 
             return digitValue(freqState.val, pos);
         });
 
-        // Returns opacityState from freqState which contains the opacity of the digit/separator,
-        // to allow fading all the left most zeros.
+        // Returns opacityState from freqState which contains the opacity value [0.0,1.0]
+        // of the digit to allow fading all the leftmost zeros.
         // If freqState changes, opacityState must be recalculated.
         const opacityState = van.derive(()=> {
 
@@ -70,7 +70,64 @@ export default function Tuner ({freqState, ndigits, sep, fontSize, suffix, leftO
             return style;
         }
 
-        // Each digit is rendered as an HTML label. A <span> could also have been used.
+        // Increments the digit at position 'pos' by one
+        const incDigit = (pos, val) => {
+
+            freqState.val += 10**(pos)
+        }
+
+        // Decrements the digit at position 'pos' by one
+        const decDigit = (pos, val) => {
+
+            const delta = 10**pos;
+            if (freqState.val < delta) {
+                return;
+            }
+            freqState.val -= delta;
+        }
+
+        // Sets the focus to previous digit from 'el', if possible
+        const prevDigit = (el) => {
+
+            while (true) {
+                el = el.previousSibling;
+                if (!el) {
+                    return;
+                }
+                if (el.tagName === 'LABEL') {
+                    el.focus();
+                    return;
+                }
+            }
+        }
+
+        // Sets the focus to next digit from 'el', if possible
+        const nextDigit = (el) => {
+
+            while (true) {
+                el = el.nextSibling;
+                if (!el) {
+                    return;
+                }
+                if (el.tagName === 'LABEL') {
+                    el.focus();
+                    return;
+                }
+            }
+        }
+
+        // Sets the numeric value of the digit at position 'pos'
+        // and then advances to next digit, if possible.
+        const setDigit = (pos, v, el, newv) => {
+
+            if (v !== newv) {
+                const diff = (newv - v) * 10**pos;
+                freqState.val += diff;
+            }
+            nextDigit(el);
+        }
+
+        // Each digit is rendered as an HTML label.
         // To allow focusing the digit to receive keyboard events,
         // the tabIndex attribute must be defined.
         return label({
@@ -109,7 +166,7 @@ export default function Tuner ({freqState, ndigits, sep, fontSize, suffix, leftO
         );
     }
 
-    // Separator is a Van component created from <span>
+    // Separator is a Van component created from HTML <span> element.
     const Separator = (pos) => {
 
         // Returns opacityState from freqState which contains the opacity of the separator,
@@ -133,62 +190,6 @@ export default function Tuner ({freqState, ndigits, sep, fontSize, suffix, leftO
         return span({style: sepStyle}, sep);
     }
 
-
-    // Increments the current digit by one
-    const incDigit = (pos, val) => {
-
-        freqState.val += 10**(pos)
-    }
-
-    // Decrements the current digit by on
-    const decDigit = (pos, val) => {
-
-        if (val == 0) {
-            return;
-        }
-        freqState.val -= 10**(pos)
-    }
-
-    // Sets the focus to previous digit, if possible
-    const prevDigit = (el) => {
-
-        while (true) {
-            el = el.previousSibling;
-            if (!el) {
-                return;
-            }
-            if (el.tagName === 'LABEL') {
-                el.focus();
-                return;
-            }
-        }
-    }
-
-    // Sets the focus to next digit, if possible
-    const nextDigit = (el) => {
-
-        while (true) {
-            el = el.nextSibling;
-            if (!el) {
-                return;
-            }
-            if (el.tagName === 'LABEL') {
-                el.focus();
-                return;
-            }
-        }
-    }
-
-    // Sets the numeric value of the digit and then
-    // advances to next digit, if possible.
-    const setDigit = (pos, v, el, newv) => {
-
-        if (v !== newv) {
-            const diff = (newv - v) * 10**pos;
-            freqState.val += diff;
-        }
-        nextDigit(el);
-    }
 
     // Builds list of Tuner children elements
     const digits = [];
