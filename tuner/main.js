@@ -27,10 +27,11 @@ van.add(document.body, tuner1);
 
 const freq2 = van.state(230445);
 const tuner2 = Tuner({
-    freqState: freq2,
-    ndigits: 8,
-    fontSize: '72px',
-    sep: ',',
+    freqState:  freq2,
+    ndigits:    8,
+    fontSize:   '72px',
+    sep:        ',',
+    leftOpacity: 0.4,
 });
 van.add(document.body, tuner2);
 
@@ -41,6 +42,7 @@ const tuner3 = Tuner({
     fontSize: '72px',
     sep: '.',
     suffix: " Hz",
+    leftOpacity: 0.1,
 });
 van.add(document.body, tuner3);
 
