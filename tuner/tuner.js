@@ -96,7 +96,7 @@ export default function Tuner ({freqState, ndigits, sep, fontSize, suffix}) {
     // Returns the derived style of the separator
     const sepStyle = () => {
 
-        let style = `opacity: ${opacityState.val};`
+        let style = "";
         if (fontSize) {
             style += `font-size: ${fontSize};`
         }
