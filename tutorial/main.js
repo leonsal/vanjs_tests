@@ -13,8 +13,7 @@ function demoSelect() {
         select({onchange:(ev) => {
 
                 // Get index of selected option
-                // const index = ev.target.selectedIndex;
-                // currentDemoIdx.value = index-1;
+                const index = ev.target.selectedIndex;
                 if (index === undefined) {
                     return;
                 }
