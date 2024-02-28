@@ -1,45 +1,34 @@
-
-
-function Digit(tuner, pos, val) {
-
-    // Creates HTML label for the digit
-    const el = document.createElement("label");
-    const text = document.createTextNode(val.toString());
-    el.appendChild(text);
-
-    el.tabIndex = -1;
-    el.style.fontSize = '72px';
-    el.onmousedown = (ev) => {ev.target.focus(); ev.preventDefault()},
-    el.onkeydown = (ev) => tuner.onDigitKeyDown(pos, ev);
-    el.onwheel   = (ev) => tuner.onDigitWheel(pos, ev);
-
-    return el;
-}
-
-function Separator(val) {
-
-    const el = document.createElement("span");
-    const text = document.createTextNode(val);
-    el.appendChild(text);
-    return el;
-}
-
+const EL_DIGIT  = 'digit';
+const EL_SEP    = 'sep';
+const EL_SUFFIX = 'suffix';
 
 export default class Tuner extends EventTarget {
 
     // ndigits:   : Total number of digits
+    // frequency  : Optional initial frequency
     // sep        : Optional string with thousands group separator
     // fontSize   : Optional font size style string
     // suffix     : Optional suffix string
     // leftOpacity: Optional opacity from [0,1] for the leftmost zeroes and separators
     constructor(cfg) {
 
+        // Call EventTarget contructor
         super();
+
         this.#cfg = cfg;
+        let frequency = this.#cfg.frequency ?? 0;
+        this.#cfg.leftOpacity = this.#cfg.leftOpacity ?? 1.0;
+
+        // Builds optional suffix
         this.#el = document.createElement("div");
+        if (this.#cfg.suffix) {
+            const suffix = this.#newSuffix(this.#cfg.suffix);
+            this.#el.appendChild(suffix);
+        }
+        // Builds digits and separators
         let group = 0;
         for (let pos = 0; pos < cfg.ndigits; pos++) {
-            let digit = Digit(this, pos, 2);
+            let digit = this.#newDigit(pos, 0);
             if (!this.#el.firstChild) {
                 this.#el.appendChild(digit);
             } else {
@@ -47,45 +36,57 @@ export default class Tuner extends EventTarget {
             }
             group++;
             if (group && ((group % 3) == 0) && (pos < cfg.ndigits-1) && cfg.sep) {
-                const s = Separator(cfg.sep);
+                const s = this.#newSep(cfg.sep);
                 this.#el.insertBefore(s, this.#el.firstChild);
             }
         }
+        this.frequency = frequency;
     }
 
+    // Returns the HTML element for this Tuner
     get el() {
 
         return this.#el;
     }
 
+    // Get current frequency value
     get frequency() {
 
         return this.#freq;
     }
 
+    // Sets new frequency value.
+    // May dispatch event for registered listeners.
     set frequency(val) {
 
         this.#freq = val;
 
-        // Returns the digit value from 0 to 9 from the frequency value 
-        // and digit position from right to left
-        const digitValue = (freq, pos) => {
-
-            let n = Math.floor(freq / (10**pos));
-            if (n > 9) {
-                n = n % 10;
-            }
-            return n;
-        }
         for (let pos = 0; pos < this.#cfg.ndigits; pos++) {
-            this.#setDigit(pos, digitValue(this.#freq, pos));
+            const n = this.#digitValue(pos);
+            const el = this.#digitElement(pos);
+            let opacity = 1.0;
+            const max = 10**(pos+1) - 1;
+            if (pos != 0 && n == 0 && max > this.#freq) {
+                opacity = this.#cfg.leftOpacity;
+            }
+            this.#setDigit(pos, n, opacity);
+            // Sets the separator opacity
+            if (el.nextSibling && el.nextSibling.dataset.type == EL_SEP) {
+                el.nextSibling.style.opacity = opacity;
+            }
         }
+
+        // Dispatch custom event with new frequency
+        this.dispatchEvent(new CustomEvent('frequency', {
+            detail: { frequency: this.#freq }
+        }));
     }
 
-    onDigitKeyDown(pos, ev) {
+    // Process digit keydown events
+    #onDigitKeyDown(pos, ev) {
 
         if (ev.key >= 0 && ev.key <= 9) {
-            this.#setDigit(pos, parseInt(ev.key));
+            this.#changeDigit(pos, parseInt(ev.key));
             this.#focusNext(pos);
             return;
         }
@@ -107,7 +108,8 @@ export default class Tuner extends EventTarget {
         }
     }
 
-    onDigitWheel(pos, ev) {
+    // Process digit wheel events
+    #onDigitWheel(pos, ev) {
 
         if (ev.deltaY > 0) {
             this.#decDigit(pos);
@@ -119,7 +121,7 @@ export default class Tuner extends EventTarget {
     // Sets the focus to previous digit from 'pos', if possible
     #focusPrev(pos) {
 
-        const digit = this.#digitAt(pos+1); 
+        const digit = this.#digitElement(pos+1); 
         if (digit) {
             digit.focus();
         }
@@ -128,19 +130,19 @@ export default class Tuner extends EventTarget {
     // Sets the focus to next digit from 'pos', if possible
     #focusNext(pos) {
 
-        const digit = this.#digitAt(pos-1); 
+        const digit = this.#digitElement(pos-1); 
         if (digit) {
             digit.focus();
         }
     }
 
     // Returns the digit DOM element at the specified position
-    #digitAt(pos) {
+    #digitElement(pos) {
 
         let count = 0;
         let curr = this.#el.lastChild;
         while (curr) {
-            if (curr.tagName == 'LABEL') {
+            if (curr.dataset.type == EL_DIGIT) {
                 if (count == pos) {
                     return curr;
                 }
@@ -150,16 +152,31 @@ export default class Tuner extends EventTarget {
         }
     }
 
-    // Sets the value of the digit at the specified 'pos'
-    #setDigit(pos, val) {
+    // Sets the value and opacity of the digit text element at the specified 'pos'
+    #setDigit(pos, val, opacity) {
 
-        const digit = this.#digitAt(pos);
+        const digit = this.#digitElement(pos);
+        digit.style.opacity = opacity;
         digit.firstChild.nodeValue = val.toString();
+    }
+
+    #changeDigit(pos, val) {
+
+        const old = this.#digitValue(pos)
+        if (old == val) {
+            return;
+        }
+        const diff = (val - old) * 10**pos;
+        this.frequency += diff;
     }
 
     #decDigit(pos) {
 
-        this.frequency -= 10 **pos;
+        const delta = 10**pos;
+        if (this.#freq < delta) {
+            return;
+        }
+        this.frequency -= delta;
     }
 
     #incDigit(pos) {
@@ -167,10 +184,65 @@ export default class Tuner extends EventTarget {
         this.frequency += 10 **pos;
     }
 
+    // Returns the digit value from 0 to 9 from the frequency value 
+    // and digit position from right to left
+    #digitValue(pos) {
+
+        let n = Math.floor(this.#freq / (10**pos));
+        if (n > 9) {
+            n = n % 10;
+        }
+        return n;
+    }
+
+    // Creates and returns the HTML element for a digit at the specified position
+    #newDigit(pos, val) {
+
+        // Creates HTML label for the digit
+        const el = document.createElement("label");
+        const text = document.createTextNode(val.toString());
+        el.appendChild(text);
+
+        el.tabIndex = -1;
+        el.dataset.type = EL_DIGIT;
+        el.style.opacity = this.#cfg.leftOpacity;
+        if (this.#cfg.fontSize) {
+            el.style.fontSize = this.#cfg.fontSize;
+        }
+        el.onmousedown = (ev) => {ev.target.focus(); ev.preventDefault()},
+        el.onkeydown = (ev) => this.#onDigitKeyDown(pos, ev);
+        el.onwheel   = (ev) => this.#onDigitWheel(pos, ev);
+        return el;
+    }
+
+    // Creates and returns the HTML element for thousands separator
+    #newSep(val) {
+
+        const el = document.createElement("label");
+        el.dataset.type = EL_SEP;
+        if (this.#cfg.fontSize) {
+            el.style.fontSize = this.#cfg.fontSize;
+        }
+        const text = document.createTextNode(val);
+        el.appendChild(text);
+        return el;
+    }
+
+    #newSuffix(val) {
+
+        const el = document.createElement("label");
+        el.dataset.type = EL_SUFFIX;
+        if (this.#cfg.fontSize) {
+            el.style.fontSize = this.#cfg.fontSize;
+        }
+        const text = document.createTextNode(val);
+        el.appendChild(text);
+        return el;
+    }
     
     // Private instance properties
-    #cfg        = {};       // Configuration object
-    #el         = null;     // Main DOM element
-    #freq       = 0;        // Current frequency value
+    #cfg    = {};       // Configuration object
+    #el     = null;     // Main DOM element
+    #freq   = 0;        // Current frequency value
 }
 
