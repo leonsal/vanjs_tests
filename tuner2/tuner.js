@@ -195,7 +195,7 @@ export default class Tuner extends EventTarget {
         return n;
     }
 
-    // Creates and returns the HTML element for a digit at the specified position
+    // Creates and returns HTML element for a digit at the specified position
     #newDigit(pos, val) {
 
         // Creates HTML label for the digit
@@ -203,19 +203,28 @@ export default class Tuner extends EventTarget {
         const text = document.createTextNode(val.toString());
         el.appendChild(text);
 
+        // Set attributes
         el.tabIndex = -1;
         el.dataset.type = EL_DIGIT;
         el.style.opacity = this.#cfg.leftOpacity;
         if (this.#cfg.fontSize) {
             el.style.fontSize = this.#cfg.fontSize;
         }
-        el.onmousedown = (ev) => {ev.target.focus(); ev.preventDefault()},
+
+        // Set event handles
+        el.onmousedown = (ev) => {
+            console.log('mouse down');
+            ev.target.focus({focusVisible:true});
+            ev.preventDefault();
+        },
         el.onkeydown = (ev) => this.#onDigitKeyDown(pos, ev);
         el.onwheel   = (ev) => this.#onDigitWheel(pos, ev);
+        el.onmouseenter = () => el.style.backgroundColor = "lightgray";
+        el.onmouseleave = () => el.style.backgroundColor = "white";
         return el;
     }
 
-    // Creates and returns the HTML element for thousands separator
+    // Creates and returns HTML element for thousands separator
     #newSep(val) {
 
         const el = document.createElement("label");
@@ -228,6 +237,7 @@ export default class Tuner extends EventTarget {
         return el;
     }
 
+    // Creates and returns HTML element for suffix
     #newSuffix(val) {
 
         const el = document.createElement("label");

@@ -2,6 +2,8 @@ import Tuner from "./tuner.js"
 
 function createTest() {
 
+    document.title = "Tuner2 tests";
+
     const test = document.createElement("div");
     const h1 = document.createElement("h1");
     h1.textContent = "Tuner2 tests";
