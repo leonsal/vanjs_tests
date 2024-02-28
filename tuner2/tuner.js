@@ -208,7 +208,6 @@ export default class Tuner extends EventTarget {
         el.tabIndex = -1;
         el.dataset.type = EL_DIGIT;
         el.style.opacity = this.#leftOpacity;
-        el.style.border = 'none';
         if (this.#fontSize) {
             el.style.fontSize = this.#fontSize;
         }
