@@ -208,6 +208,7 @@ export default class Tuner extends EventTarget {
         el.tabIndex = -1;
         el.dataset.type = EL_DIGIT;
         el.style.opacity = this.#leftOpacity;
+        el.style.border = 'none';
         if (this.#fontSize) {
             el.style.fontSize = this.#fontSize;
         }
@@ -215,7 +216,7 @@ export default class Tuner extends EventTarget {
         // Set event handles
         el.onmousedown = (ev) => {
             console.log('mouse down');
-            ev.target.focus({focusVisible:true});
+            ev.target.focus();
             ev.preventDefault();
         },
         el.onkeydown = (ev) => this.#onDigitKeyDown(pos, ev);
