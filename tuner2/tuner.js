@@ -32,13 +32,13 @@ export default class Tuner extends EventTarget {
     // fontSize   : Optional font size style string
     // suffix     : Optional suffix string
     // leftOpacity: Optional opacity from [0,1] for the leftmost zeroes and separators
-    constructor({ndigits, sep, fontSize, suffix, leftOpacitiy}) {
+    constructor(cfg) {
 
         super();
-        this.#ndigits = ndigits;
+        this.#cfg = cfg;
         this.#el = document.createElement("div");
         let group = 0;
-        for (let pos = 0; pos < ndigits; pos++) {
+        for (let pos = 0; pos < cfg.ndigits; pos++) {
             let digit = Digit(this, pos, 2);
             if (!this.#el.firstChild) {
                 this.#el.appendChild(digit);
@@ -46,8 +46,8 @@ export default class Tuner extends EventTarget {
                 this.#el.insertBefore(digit, this.#el.firstChild);
             }
             group++;
-            if (group && ((group % 3) == 0) && (pos < ndigits-1) && sep) {
-                const s = Separator(sep);
+            if (group && ((group % 3) == 0) && (pos < cfg.ndigits-1) && cfg.sep) {
+                const s = Separator(cfg.sep);
                 this.#el.insertBefore(s, this.#el.firstChild);
             }
         }
@@ -77,7 +77,7 @@ export default class Tuner extends EventTarget {
             }
             return n;
         }
-        for (let pos = 0; pos < this.#ndigits; pos++) {
+        for (let pos = 0; pos < this.#cfg.ndigits; pos++) {
             this.#setDigit(pos, digitValue(this.#freq, pos));
         }
     }
@@ -169,8 +169,8 @@ export default class Tuner extends EventTarget {
 
     
     // Private instance properties
-    #ndigits    = null;
+    #cfg        = {};       // Configuration object
     #el         = null;     // Main DOM element
-    #freq       = 0;
+    #freq       = 0;        // Current frequency value
 }
 
