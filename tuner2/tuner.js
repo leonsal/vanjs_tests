@@ -10,24 +10,25 @@ export default class Tuner extends EventTarget {
     // fontSize   : Optional font size style string
     // suffix     : Optional suffix string
     // leftOpacity: Optional opacity from [0,1] for the leftmost zeroes and separators
-    constructor(cfg) {
+    constructor({ndigits, frequency, sep, fontSize, suffix, leftOpacity}) {
 
         // Call EventTarget contructor
         super();
 
-        this.#cfg = cfg;
-        let frequency = this.#cfg.frequency ?? 0;
-        this.#cfg.leftOpacity = this.#cfg.leftOpacity ?? 1.0;
+        // Save config options
+        this.#ndigits = ndigits;
+        this.#fontSize = fontSize;
+        frequency = frequency ?? 0;
+        this.#leftOpacity = leftOpacity ?? 1.0;
 
         // Builds optional suffix
         this.#el = document.createElement("div");
-        if (this.#cfg.suffix) {
-            const suffix = this.#newSuffix(this.#cfg.suffix);
-            this.#el.appendChild(suffix);
+        if (suffix) {
+            this.#el.appendChild(this.#newSuffix(suffix));
         }
         // Builds digits and separators
         let group = 0;
-        for (let pos = 0; pos < cfg.ndigits; pos++) {
+        for (let pos = 0; pos < ndigits; pos++) {
             let digit = this.#newDigit(pos, 0);
             if (!this.#el.firstChild) {
                 this.#el.appendChild(digit);
@@ -35,8 +36,8 @@ export default class Tuner extends EventTarget {
                 this.#el.insertBefore(digit, this.#el.firstChild);
             }
             group++;
-            if (group && ((group % 3) == 0) && (pos < cfg.ndigits-1) && cfg.sep) {
-                const s = this.#newSep(cfg.sep);
+            if (group && ((group % 3) == 0) && (pos < ndigits-1) && sep) {
+                const s = this.#newSep(sep);
                 this.#el.insertBefore(s, this.#el.firstChild);
             }
         }
@@ -61,13 +62,13 @@ export default class Tuner extends EventTarget {
 
         this.#freq = val;
 
-        for (let pos = 0; pos < this.#cfg.ndigits; pos++) {
+        for (let pos = 0; pos < this.#ndigits; pos++) {
             const n = this.#digitValue(pos);
             const el = this.#digitElement(pos);
             let opacity = 1.0;
             const max = 10**(pos+1) - 1;
             if (pos != 0 && n == 0 && max > this.#freq) {
-                opacity = this.#cfg.leftOpacity;
+                opacity = this.#leftOpacity;
             }
             this.#setDigit(pos, n, opacity);
             // Sets the separator opacity
@@ -85,7 +86,7 @@ export default class Tuner extends EventTarget {
     // Process digit keydown events
     #onDigitKeyDown(pos, ev) {
 
-        if (ev.key >= 0 && ev.key <= 9) {
+        if (ev.key >= '0' && ev.key <= '9') {
             this.#changeDigit(pos, parseInt(ev.key));
             this.#focusNext(pos);
             return;
@@ -206,9 +207,9 @@ export default class Tuner extends EventTarget {
         // Set attributes
         el.tabIndex = -1;
         el.dataset.type = EL_DIGIT;
-        el.style.opacity = this.#cfg.leftOpacity;
-        if (this.#cfg.fontSize) {
-            el.style.fontSize = this.#cfg.fontSize;
+        el.style.opacity = this.#leftOpacity;
+        if (this.#fontSize) {
+            el.style.fontSize = this.#fontSize;
         }
 
         // Set event handles
@@ -229,8 +230,8 @@ export default class Tuner extends EventTarget {
 
         const el = document.createElement("label");
         el.dataset.type = EL_SEP;
-        if (this.#cfg.fontSize) {
-            el.style.fontSize = this.#cfg.fontSize;
+        if (this.#fontSize) {
+            el.style.fontSize = this.#fontSize;
         }
         const text = document.createTextNode(val);
         el.appendChild(text);
@@ -242,8 +243,8 @@ export default class Tuner extends EventTarget {
 
         const el = document.createElement("label");
         el.dataset.type = EL_SUFFIX;
-        if (this.#cfg.fontSize) {
-            el.style.fontSize = this.#cfg.fontSize;
+        if (this.#fontSize) {
+            el.style.fontSize = this.#fontSize;
         }
         const text = document.createTextNode(val);
         el.appendChild(text);
@@ -251,8 +252,10 @@ export default class Tuner extends EventTarget {
     }
     
     // Private instance properties
-    #cfg    = {};       // Configuration object
-    #el     = null;     // Main DOM element
-    #freq   = 0;        // Current frequency value
+    #ndigits        = null;
+    #fontSize       = null;
+    #leftOpacity    = null;
+    #el             = null;
+    #freq           = 0;
 }
 
