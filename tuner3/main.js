@@ -23,7 +23,9 @@ function createTest() {
     const b2 = document.createElement("button");
     b2.textContent = "Dec";
     b2.onclick = () => {
-        tuner1.frequency--;
+        //tuner1.frequency--;
+        const freq = parseInt(tuner1.getAttribute("frequency"));
+        tuner1.setAttribute("frequency", freq - 1);
     }
     test.appendChild(b2);
 
@@ -44,14 +46,17 @@ document.body.appendChild(test);
 const tuner1 = new Tuner();
 tuner1.ndigits = 4;
 tuner1.frequency = 123;
-tuner1.fontSize = '64px';
+tuner1.fontSize = '60px';
 document.body.appendChild(tuner1);
+tuner1.addEventListener('frequency', () => {
+    label.textContent = tuner1.frequency.toString();
+});
 
 document.body.appendChild(document.createElement("p"));
 
 const tuner2 = new Tuner();
 tuner2.ndigits = 8;
-tuner2.frequency = 230445;
+tuner2.frequency = 230_445;
 tuner2.sep = ',';
 tuner2.fontSize = '72px';
 tuner2.leftOpacity = 0.4;
@@ -61,7 +66,7 @@ document.body.appendChild(document.createElement("p"));
 
 const tuner3 = new Tuner();
 tuner3.ndigits = 12;
-tuner3.frequency = 24000000;
+tuner3.frequency = 2_400_000_000;
 tuner3.sep = '.',
 tuner3.fontSize =  '80px',
 tuner3.suffix =     ' Hz',

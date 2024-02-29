@@ -5,6 +5,7 @@ const EL_SUFFIX = 'suffix';
 
 export default class Tuner extends HTMLElement {
 
+    // Used by browser to know which attributes should be monitored for changes
     static observedAttributes = ['frequency'];
 
     constructor() {
@@ -12,44 +13,59 @@ export default class Tuner extends HTMLElement {
         super();
     }
 
+    // Set number of digits property
+    // No effect after component is inserted into the DOM
     set ndigits(n) {
 
-        // Can be set only once before inserting component into the page.
-        if (this.#ndigits !== null) {
+        if (this.#shadow != null) {
             return;
         }
         this.#ndigits = n;
     }
 
+    // Set frequency property
+    // Can be used any time to change the frequency value.
     set frequency(f) {
 
         this.#freq = f;
+        this.setAttribute("frequency", f.toString());
         if (!this.isConnected) {
             return;
         }
+
         this.#updateFreq();
+        this.dispatchEvent(new CustomEvent('frequency'));
     }
 
+    // Set separator property
+    // No effect after component is inserted into the DOM
     set sep(v) {
 
         this.#sep = v;
     }
 
+    // Set font size property
+    // No effect after component is inserted into the DOM
     set fontSize(fsize) {
 
         this.#fontSize = fsize;
     }
 
+    // Set suffix property 
+    // No effect after component is inserted into the DOM
     set suffix(v) {
 
         this.#suffix = v;
     }
 
+    // Set left opacity property
+    // No effect after component is inserted into the DOM
     set leftOpacity(v) {
 
         this.#leftOpacity = v;
     }
 
+    // Get current frequency property
     get frequency() {
 
         return this.#freq;
@@ -60,38 +76,32 @@ export default class Tuner extends HTMLElement {
 
         this.#shadow = this.attachShadow({ mode: "open" });
 
-        // Get ndigits attribute from markup
         const ndigits = this.getAttribute("ndigits");
         if (ndigits !== null) {
             this.#ndigits = parseInt(ndigits);
         }
         this.#ndigits = this.#ndigits ?? 4;
 
-        // Get frequency attribute from markup
         const freq = this.getAttribute("frequency");
         if (freq !== null) {
             this.#freq = parseInt(freq);
         }
 
-        // Get separator attribute from markup
         const sep = this.getAttribute("sep");
         if (sep !== null) {
             this.#sep = sep;
         }
 
-        // Get font-size attribute from markup
         const fontSize = this.getAttribute("font-size");
         if (fontSize !== null) {
             this.#fontSize = fontSize;
         }
 
-        // Get left-opacity attribute from markup
         const leftOpacity = this.getAttribute("left-opacity");
         if (leftOpacity !== null) {
             this.#leftOpacity = parseFloat(leftOpacity);
         }
 
-        // Get left-opacity attribute from markup
         const suffix = this.getAttribute("suffix");
         this.#suffix = suffix ?? this.#suffix;
 
@@ -101,17 +111,22 @@ export default class Tuner extends HTMLElement {
     // Called by browser when component is removed from the page
     disconnectedCallback() {
 
+        this.#shadow = null;
     }
 
     // Called by browser when component is moved to new page
     adoptedCallback() {
-
     }
 
     // Called by browser when observable attribute has changed
     attributeChangedCallback(name, oldValue, newValue) {
 
-        console.log(`Attribute ${name} has changed: ${oldValue} -> ${newValue}`);
+        //console.log(`Attribute ${name} has changed: ${oldValue} -> ${newValue}`);
+        if (name == "frequency" && (oldValue != newValue)) {
+            if (this.isConnected) {
+                this.frequency = parseInt(newValue);
+            }
+        }
     }
 
     // Builds the tuner internal DOM tree
@@ -289,14 +304,15 @@ export default class Tuner extends HTMLElement {
 
         // Set event handles
         el.onmousedown = (ev) => {
-            console.log('mouse down');
             ev.target.focus();
             ev.preventDefault();
         },
         el.onkeydown = (ev) => this.#onDigitKeyDown(pos, ev);
         el.onwheel   = (ev) => this.#onDigitWheel(pos, ev);
-        el.onmouseenter = () => el.style.backgroundColor = "lightgray";
-        el.onmouseleave = () => el.style.backgroundColor = "white";
+        // el.onmouseenter = () => el.style.backgroundColor = "lightgray";
+        // el.onmouseleave = () => el.style.backgroundColor = "white";
+        el.onmouseover = () => el.style.backgroundColor = "lightgray";
+        el.onmouseout = () => el.style.backgroundColor = "white";
         return el;
     }
 
@@ -327,12 +343,12 @@ export default class Tuner extends HTMLElement {
     }
 
     #shadow         = null;
-    #ndigits        = null;
+    #ndigits        = 4;
     #freq           = 0;;
-    #sep            = null;
-    #fontSize       = null;
+    #sep            = '';
+    #fontSize       = '';
     #leftOpacity    = 1.0;
-    #suffix         = null;
+    #suffix         = '';
 }
 
 customElements.define("my-tuner", Tuner);
