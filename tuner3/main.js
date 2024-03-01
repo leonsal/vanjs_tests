@@ -1,8 +1,6 @@
 import Tuner from "./tuner.js"
 import dom from "./dom.js"
 
-const {button, div, h1, p, label, hr} = dom.tags;
-
 const tuner1 = new Tuner();
 tuner1.ndigits = 4;
 tuner1.frequency = 123;
@@ -26,12 +24,22 @@ tuner3.fontSize =  '80px';
 tuner3.suffix =     ' Hz';
 tuner3.leftOpacity = 0.1;
 
+const tuner4 = dom.tags("my-tuner", {
+    ndigits:        10,
+    frequency:      420_000_000,
+    sep:            '_',
+    'font-size':    '42px',
+    suffix:         ' MHz',
+    leftOpactity:   0.2,
+});
+
+const {button, div, h1, p, label, hr} = dom.tags;
 const header = div(
-    h1("Tuner Web Component component tests"),
+    h1("Tuner Web Component tests"),
     hr(),
     button({ onclick: () => {tuner1.frequency++}, }, "Inc"),
     button({ onclick: () => {tuner1.frequency--}, }, "Dec"),
     label(" frequency: "), label({id: "freq"}, tuner1.frequency),
 );
 
-dom.add(document.body, header, tuner1, p(), tuner2, p(), tuner3);
+dom.add(document.body, header, tuner1, p(), tuner2, p(), tuner3, p(), tuner4);
