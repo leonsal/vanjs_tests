@@ -23,17 +23,17 @@ tuner3.sep = '.';
 tuner3.fontSize =  '80px';
 tuner3.suffix =     ' Hz';
 tuner3.leftOpacity = 0.1;
+const {button, div, h1, p, label, hr, "my-tuner": myTuner} = dom.tags;
 
-const tuner4 = dom.tags("my-tuner", {
+const tuner4 = myTuner({
     ndigits:        10,
     frequency:      420_000_000,
-    sep:            '_',
+    sep:            '|',
     'font-size':    '42px',
     suffix:         ' MHz',
     leftOpactity:   0.2,
 });
 
-const {button, div, h1, p, label, hr} = dom.tags;
 const header = div(
     h1("Tuner Web Component tests"),
     hr(),
