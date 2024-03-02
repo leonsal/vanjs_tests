@@ -1,0 +1,12 @@
+.flexRow {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.flexCol {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
