@@ -7,8 +7,6 @@ const test = (newItem) => {
 
     // Creates List component and sets 'change' handler
     const list = new List();
-    // list.style.borderWidth = '2px';
-    // list.style.borderStyle = 'solid';
     list.addEventListener('change', () => {
         console.log("list changed");
     });
@@ -26,7 +24,7 @@ const test = (newItem) => {
                 onclick: () => {
                     const item = new ListItem();
                     newItem(item, inputText.value);
-                    list.appendChild(item);
+                    list.appendItem(item);
                 },
             },
             "Insert"
@@ -37,8 +35,9 @@ const test = (newItem) => {
         button({
                 onclick: () => {
                     const selected = list.selected;
+                    console.log("selected", list.selected)
                     for (let i = 0; i < selected.length; i++) {
-                        list.removeChild(selected[i]);
+                        list.removeItem(selected[i]);
                     }
                 },
             },
@@ -55,11 +54,12 @@ dom.add(document.body, test((item, text) => {
 
     item.value = "["+text+"]";
 }));
+dom.add(document.body, p())
 
-// dom.add(document.body, test((item, text) => {
-//
-//     const dtime = new Date().toISOString().slice(11,23);
-//     item.value = span(i({style: 'color: blue'},dtime), ":  ", text);
-// }));
+dom.add(document.body, test((item, text) => {
+
+    const dtime = new Date().toISOString().slice(11,23);
+    item.value = span(i({style: 'color: blue'},dtime), ":  ", text);
+}));
 
 

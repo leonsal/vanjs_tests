@@ -159,7 +159,8 @@ export class List extends HTMLElement {
     get selected() {
 
         const sel = [];
-        let child = this.shadowRoot.firstChild;
+        let cont = this.shadowRoot.firstChild;
+        let child = cont.firstChild;
         while (child) {
             if (child.selected) {
                 sel.push(child);
@@ -192,15 +193,15 @@ export class List extends HTMLElement {
     }
 
     // Overrides node append child, to append specified element in the component shadow dom
-    appendChild(item) {
+    appendItem(item) {
 
         return this.shadowRoot.firstChild.append(item);
     }
 
     // Overrides node remove child, to remove specified element from the component shadow dom
-    removeChild(item) {
+    removeItem(item) {
 
-        return this.shadowRoot.firstChid.remove(item);
+        return this.shadowRoot.firstChild.removeChild(item);
     }
 
     // Called by browser when component is inserted in the page
