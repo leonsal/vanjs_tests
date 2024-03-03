@@ -18,7 +18,7 @@ export class ListItem extends HTMLElement {
         this.#value = val;
     }
 
-    // Set list item selected property
+    // Set list item selected property (true|false)
     set selected(val) {
 
         // Get parent list component and multi-select attribute value
@@ -45,6 +45,7 @@ export class ListItem extends HTMLElement {
     connectedCallback() {
 
         this.attachShadow({ mode: "open" });
+
 
         // Creates item container element and append
         // node value specified by user in 'value' property.
