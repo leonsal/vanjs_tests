@@ -41,11 +41,13 @@ export class ListItem extends HTMLElement {
         return this.#selected;
     }
 
+    // Called by browser when component is inserted in the page
     connectedCallback() {
 
         this.attachShadow({ mode: "open" });
 
-        // Creates item container element and append value node
+        // Creates item container element and append
+        // node value specified by user in 'value' property.
         const cont = document.createElement("div");
         let node = this.#value;
         if (typeof(this.#value) === 'string') {
@@ -94,22 +96,22 @@ export class ListItem extends HTMLElement {
     // Updates the style of the list item
     #updateStyle(el) {
 
+        let color = "white"
         if (this.#mouseover) {
             if (this.#selected) {
-                el.style.backgroundColor = "gray";
+                color = "gray";
             } else {
-                el.style.backgroundColor = "lightgray";
+                color = "lightgray";
             }
         } else {
             if (this.#selected) {
-                el.style.backgroundColor = "lightgray";
-            } else {
-                el.style.backgroundColor = "white";
+                color = "lightgray";
             }
         }
+        el.style.backgroundColor = color;
     }
 
-    // Unselect all list items except the item specifid
+    // Unselect all list items except the item specified
     #unselectOthers(c) {
 
         const list = this.parentNode.host;
@@ -166,11 +168,11 @@ export class List extends HTMLElement {
         return sel;
     }
 
-    set unselectAll(_) {
+    // Unselect all list items
+    unselect() {
 
         let child = this.shadowRoot.firstChild;
         while (child) {
-            //console.log("unselect", child); 
             child.selected = false;
             child = child.nextSibling;
         }
@@ -198,6 +200,7 @@ export class List extends HTMLElement {
         return this.shadowRoot.removeChild(item);
     }
 
+    // Called by browser when component is inserted in the page
     connectedCallback() {
 
         this.attachShadow({ mode: "open" });

@@ -1,10 +1,10 @@
 import dom from "./dom.js"
-import {List, ListItem} from  "./list.js"
+import {List, ListItem} from "./list.js"
 
 
 const test = () => {
 
-    const {button, div, input, span, h1, p, label, hr} = dom.tags;
+    const {button, div, input, span, i, h1, p, label, hr} = dom.tags;
 
     // Creates List component and sets 'change' handler
     const list = new List();
@@ -24,7 +24,8 @@ const test = () => {
         button({
                 onclick: () => {
                     const item = new ListItem();
-                    item.value = span("[", inputText.value, "]");
+                    const dtime = new Date().toISOString().slice(11,23);
+                    item.value = span(i({style: 'color: blue'},dtime), ":  ", inputText.value);
                     list.appendChild(item);
                 },
             },
@@ -43,22 +44,13 @@ const test = () => {
             },
             "Remove selected"
         ), span(" "),
-        button({ onclick: () => list.clear(), }, "Clear all"),
+        button({onclick: () => list.clear()}, "Clear all"), span(" "),
+        button({onclick: () => list.unselect()}, "Unselect all"),
         hr(),
         list,
     )
 }
 
 dom.add(document.body, test());
-
-// const test = div({
-//         class: "flexRow",
-//     },
-//     button({style: 'width:100px;'}, "1"),
-//     button({style: 'width:100px;'}, "2"),
-//     button({style: 'width:100px;'}, "3"),
-//     button({style: 'width:100px;'}, "4"),
-// )
-// dom.add(document.body, test);
 
 
