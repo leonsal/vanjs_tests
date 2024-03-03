@@ -429,6 +429,73 @@ function demo17() {
 demos.push({title:"Polymorphic binding", func: demo17});
 
 
+function myList() {
+
+    const {div, input, button, p, label, span} = van.tags
+
+    const listItem = ({time, log}) => {
+
+        const selected = van.state(false)
+        const mouseover = van.state(false)
+        const itemStyle = () => {
+            if (selected.val) {
+                return mouseover.val ? "background-color: gray" : "background-color: lightgray"
+            }
+            return mouseover.val ? "background-color: lightgray" : "background-color: white"
+        }
+
+        const onSelect = (ev) => {
+            const item = ev.target;
+            const multi = item.parentNode.getAttribute("data-multi");
+            if (multi == 'false') {
+
+
+            }
+            selected.val = true;
+        }
+
+        return div({
+                style:          itemStyle,
+                onclick:        onSelect,
+                onmouseover:    () => mouseover.val = true,
+                onmouseout:     () => mouseover.val = false,
+            },
+            label(time),
+            span(" - "),
+            label(log)
+        );
+    }
+
+
+    const MyList = ({multi}) => {
+
+        return div({
+                "data-multi": multi,
+                style: "border-style: solid; border-width: 1px",
+            },
+        );
+    }
+
+    const test = () => {
+        const listDom = MyList({multi:true});
+        const inputDom = input({type: "text"})
+        return div(
+            inputDom,
+            button({
+                    onclick: () => van.add(listDom, listItem({time:"xx", log:inputDom.value})),
+                },"➕" 
+            ),
+            p(),
+            listDom,
+        )
+    }
+
+    const demo = test();
+    van.add(document.body, demo);
+    return demo;
+}
+demos.push({title:"myList", func: myList});
+
 
 //-----------------------------------------------------------------------------
 // Show demo selection
