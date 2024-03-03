@@ -11,9 +11,11 @@ export class ListItem extends HTMLElement {
         this.setAttribute("selected", false);
     }
 
-    set text(val) {
+    // Sets item value property.
+    // The value can be a string or an HTML inline node
+    set value(val) {
 
-        this.#text = val;
+        this.#value = val;
     }
 
     // Set list item selected property
@@ -26,7 +28,7 @@ export class ListItem extends HTMLElement {
 
         // If not multi select, unselect other list items
         if (sel && multiSel === 'false') {
-            list.unselectOthers(this);
+            this.#unselectOthers(this);
         }
 
         this.#selected = sel;
@@ -39,21 +41,17 @@ export class ListItem extends HTMLElement {
         return this.#selected;
     }
 
-    // Internal function used in unselectOthers() to unselect list item
-    unselect() {
-
-        this.#selected = false;
-        this.setAttribute("selected", false);
-    }
-
     connectedCallback() {
 
         this.attachShadow({ mode: "open" });
 
-        // Creates item container element
+        // Creates item container element and append value node
         const cont = document.createElement("div");
-        const text = document.createTextNode(this.#text);
-        cont.appendChild(text);
+        let node = this.#value;
+        if (typeof(this.#value) === 'string') {
+            node = document.createTextNode(this.#value);
+        }
+        cont.appendChild(node);
         this.shadowRoot.append(cont);
 
         // Sets event handlers on the item container
@@ -66,7 +64,9 @@ export class ListItem extends HTMLElement {
             this.#updateStyle(cont);
         }
         cont.onclick = () => {
-            this.selected = true;
+            if (!this.selected) {
+                this.selected = true;
+            }
         }
     }
 
@@ -81,10 +81,12 @@ export class ListItem extends HTMLElement {
     // Called by browser when observable attribute has changed
     attributeChangedCallback(name, oldValue, newValue) {
 
-        console.log(`Attribute ${name} has changed: ${oldValue} -> ${newValue}`);
+        //console.log(`Attribute ${name} has changed: ${oldValue} -> ${newValue}`);
         if (name == "selected" && (oldValue != newValue)) {
             if (this.isConnected) {
                 this.#updateStyle(this.shadowRoot.firstChild);
+                const list = this.parentNode.host;
+                list.dispatchEvent(new CustomEvent('change'));
             }
         }
     }
@@ -107,8 +109,21 @@ export class ListItem extends HTMLElement {
         }
     }
 
+    // Unselect all list items except the item specifid
+    #unselectOthers(c) {
 
-    #text = '';
+        const list = this.parentNode.host;
+        let child = list.shadowRoot.firstChild;
+        while (child) {
+            if (child !== c) {
+                child.#selected = false;
+                child.setAttribute("selected", false);
+            }
+            child = child.nextSibling;
+        }
+    }
+
+    #value = '';
     #mouseover = false;
     #selected = false;
 }
@@ -161,25 +176,32 @@ export class List extends HTMLElement {
         }
     }
 
-    unselectOthers(c) {
+    // Removes all list elements
+    clear() {
 
-        console.log("unselectOthers");
         let child = this.shadowRoot.firstChild;
         while (child) {
-            //console.log("unselect", child); 
-            if (child !== c) {
-                child.unselect();
-            }
-            child = child.nextSibling;
+            this.shadowRoot.removeChild(child);
+            child = this.shadowRoot.firstChild;
         }
+    }
+
+    // Overrides node append child, to append specified element in the component shadow dom
+    appendChild(item) {
+
+        return this.shadowRoot.appendChild(item);
+    }
+
+    // Overrides node remove child, to remove specified element from the component shadow dom
+    removeChild(item) {
+
+        return this.shadowRoot.removeChild(item);
     }
 
     connectedCallback() {
 
-        console.log("list connected");
         this.attachShadow({ mode: "open" });
     }
-
 }
 
 customElements.define("my-list", List);
