@@ -22,8 +22,8 @@ export class ListItem extends HTMLElement {
     set selected(val) {
 
         // Get parent list component and multi-select attribute value
-        const list = this.parentNode.host;
-        const multiSel = list.dataset.multiSelect;
+        const div = this.parentNode;
+        const multiSel = div.parentNode.host.dataset.multiSelect;
         const sel = val ? true : false;
 
         // If not multi select, unselect other list items
@@ -88,7 +88,7 @@ export class ListItem extends HTMLElement {
         if (name == "selected" && (oldValue != newValue)) {
             if (this.isConnected) {
                 this.#updateStyle(this.shadowRoot.firstChild);
-                const list = this.parentNode.host;
+                const list = this.parentNode;
                 list.dispatchEvent(new CustomEvent('change'));
             }
         }
@@ -115,8 +115,8 @@ export class ListItem extends HTMLElement {
     // Unselect all list items except the item specified
     #unselectOthers(c) {
 
-        const list = this.parentNode.host;
-        let child = list.shadowRoot.firstChild;
+        const list = this.parentNode;
+        let child = list.firstChild;
         while (child) {
             if (child !== c) {
                 child.#selected = false;
@@ -172,7 +172,8 @@ export class List extends HTMLElement {
     // Unselect all list items
     unselect() {
 
-        let child = this.shadowRoot.firstChild;
+        const cont = this.shadowRoot.firstChild;
+        let child = cont.firstChild;
         while (child) {
             child.selected = false;
             child = child.nextSibling;
@@ -182,29 +183,36 @@ export class List extends HTMLElement {
     // Removes all list elements
     clear() {
 
-        let child = this.shadowRoot.firstChild;
+        const cont = this.shadowRoot.firstChild;
+        let child = cont.firstChild;
         while (child) {
-            this.shadowRoot.removeChild(child);
-            child = this.shadowRoot.firstChild;
+            cont.removeChild(child);
+            child = cont.firstChild;
         }
     }
 
     // Overrides node append child, to append specified element in the component shadow dom
     appendChild(item) {
 
-        return this.shadowRoot.appendChild(item);
+        return this.shadowRoot.firstChild.append(item);
     }
 
     // Overrides node remove child, to remove specified element from the component shadow dom
     removeChild(item) {
 
-        return this.shadowRoot.removeChild(item);
+        return this.shadowRoot.firstChid.remove(item);
     }
 
     // Called by browser when component is inserted in the page
     connectedCallback() {
 
-        this.attachShadow({ mode: "open" });
+        this.attachShadow({mode: "open" });
+        const container = document.createElement("div");
+        container.style.borderStyle = 'solid';
+        container.style.borderWidth = '1px';
+        container.style.overflow = 'auto';
+        container.style.height = '200px';
+        this.shadowRoot.append(container);
     }
 }
 
