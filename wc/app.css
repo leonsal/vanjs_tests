@@ -1,12 +1,10 @@
-.flexRow {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
+body {
+  padding: 25px;
+  background-color: white;
+  color: black;
 }
 
-.flexCol {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
+.dark-mode {
+  background-color: black;
+  color: white;
 }
-

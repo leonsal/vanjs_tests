@@ -44,7 +44,8 @@ const test = (newItem) => {
             "Remove selected"
         ), span(" "),
         button({onclick: () => list.clear()}, "Clear all"), span(" "),
-        button({onclick: () => list.unselect()}, "Unselect all"),
+        button({onclick: () => list.unselect()}, "Unselect all"), span(" "),
+        button({onclick: () => document.body.classList.toggle("dark-mode")}, "Dark/Light"),
         hr(),
         list,
     )
