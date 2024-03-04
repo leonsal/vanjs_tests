@@ -48,6 +48,7 @@ export class HSplitter extends HTMLElement {
         // Right pane
         const right = document.createElement("div");
         right.style.flexGrow = 100-this.#split;
+        right.setAttribute("draggable", "off");
         if (typeof(this.#right) === 'string') {
             right.append(document.createTextNode(this.#right));
         } else {
