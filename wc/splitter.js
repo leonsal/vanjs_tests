@@ -33,28 +33,50 @@ export class HSplitter extends HTMLElement {
 
         // Left pane
         const left = document.createElement("div");
+        left.style.flexGrow = this.#split;
+        if (typeof(this.#left) === 'string') {
+            left.append(document.createTextNode(this.#left));
+        } else {
+            left.append(this.#left);
+        }
 
-        // Center pane
+        // Center handle
         const center  = document.createElement("div");
-        center.style.width = '10px';
-        center.style.color = 'gray';
+        center.style.width = '8px';
+        center.style.backgroundColor = 'gray';
 
         // Right pane
         const right = document.createElement("div");
+        right.style.flexGrow = 100-this.#split;
+        if (typeof(this.#right) === 'string') {
+            right.append(document.createTextNode(this.#right));
+        } else {
+            right.append(this.#right);
+        }
 
         cont.append(left, center, right);
         this.shadowRoot.append(cont);
 
-        // Sets event handlers on the center splitter
+        // Sets event handlers on the center handle
         center.onmouseover = () => {
             this.#mouseover = true;
-            this.#updateStyle(cont);
+            this.#updateStyle(center);
         }
         center.onmouseout = () => {
             this.#mouseover = false;
-            this.#updateStyle(cont);
+            this.#updateStyle(center);
         }
-        center.onclick = () => {
+        center.onmousedown = () => {
+            this.#mousedown = true;
+        }
+        center.onmouseup = () => {
+            this.#mousedown = false;
+        }
+        center.onmousemove = (ev) => {
+            if (!this.#mousedown) {
+                return;
+            }
+            this.#drag(ev);
         }
     }
 
@@ -72,9 +94,24 @@ export class HSplitter extends HTMLElement {
         console.log(`Attribute ${name} has changed: ${oldValue} -> ${newValue}`);
     }
 
+    #drag(ev) {
+        console.log("drag", this.#mousedown);
+    }
+
+    #updateStyle(el) {
+
+        if (this.#mouseover) {
+            el.style.cursor = 'col-resize';
+        }
+
+
+    }
+
     #left = '';
     #right = '';
     #mouseover = false;
+    #split = 20;
+    #mousedown = false;
     #clicked = false;
 }
 

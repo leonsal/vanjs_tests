@@ -1,80 +1,52 @@
 import dom from "./dom.js"
-import {List, ListItem} from "./list.js"
+import {tunerTest} from "./tuner_test.js"
+import {listTestStr, listTestSpan} from "./list_test.js"
+import {hsplitterTest} from "./splitter_test.js"
+const {button, div, input, select, span, i, h1, h2, p, label, option, hr} = dom.tags;
 
-const {button, div, input, span, i, h1, p, label, hr} = dom.tags;
+// Globals
+const testList = []; // List of {title, func}
+let lastTest = null;
 
-const listTest = (newItem) => {
+// Show drop down for selecting demo to run
+function testSelect() {
 
-    // Creates List component and sets 'change' handler
-    const list = new List();
-    list.addEventListener('change', () => {
-        console.log("list changed");
-    });
+    const TestSelect = () => div(
 
-    const inputText = input({placeholder: "New item"});
-    const inputCheck = input({
-        type:   "checkbox",
-        id:     "multi",
-        onchange: (ev) => list.multiSelect = ev.target.checked,
-    });
-
-    return div(
-        inputText, span(" "),
-        button({
-                onclick: () => {
-                    const item = new ListItem();
-                    newItem(item, inputText.value);
-                    list.appendItem(item);
-                },
-            },
-            "Insert"
+        h2("Web Component Tests"),
+        select({onchange:(ev) => {
+                // Get index of selected option
+                const index = ev.target.selectedIndex;
+                if (index === undefined) {
+                    return;
+                }
+                // Remove last demo from the DOM
+                if (lastTest) {
+                    document.body.removeChild(lastTest);
+                    lastTest = null;
+                }
+                // Index 0 corresponds to the 'Select demo option'
+                if (index == 0) {
+                    return;
+                }
+                // Calls corresponding demo function
+                lastTest = testList[index-1].func();
+                dom.add(document.body, lastTest);
+            }},
+            // Start of select options
+            option("Select a test"),
+            // Builds array op 'option' from demos titles
+            testList.map((it) => option(it.title)),
         ),
-        span(" "),
-        inputCheck,
-        label({for:"multi"}, "multi select"), span(" "),
-        button({
-                onclick: () => {
-                    const selected = list.selected;
-                    console.log("selected", list.selected)
-                    for (let i = 0; i < selected.length; i++) {
-                        list.removeItem(selected[i]);
-                    }
-                },
-            },
-            "Remove selected"
-        ), span(" "),
-        button({onclick: () => list.clear()}, "Clear all"), span(" "),
-        button({onclick: () => list.unselect()}, "Unselect all"), span(" "),
-        button({onclick: () => document.body.classList.toggle("dark-mode")}, "Dark/Light"),
         hr(),
-        list,
-    )
+
+    );
+    dom.add(document.body, TestSelect())
 }
 
-const listTestStr = () => {
-
-    return listTest((item, text) => {
-        item.value = "["+text+"]";
-    });
-}
-
-const listTestSpan = () => {
-
-    return listTest((item, text) => {
-        const dtime = new Date().toISOString().slice(11,23);
-        item.value = span(i({style: 'color: blue'},dtime), ":  ", text);
-    });
-}
-
-dom.add(document.body, listTest((item, text) => {
-    item.value = "["+text+"]";
-}));
-dom.add(document.body, p())
-
-dom.add(document.body, listTest((item, text) => {
-
-    const dtime = new Date().toISOString().slice(11,23);
-    item.value = span(i({style: 'color: blue'},dtime), ":  ", text);
-}));
-
+testList.push({title:"List of strings", func: listTestStr});
+testList.push({title:"List of <span>", func: listTestSpan});
+testList.push({title:"Tuner", func: tunerTest});
+testList.push({title:"Horiz Splitter", func: hsplitterTest});
+testSelect();
 
