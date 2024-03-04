@@ -3,7 +3,7 @@ import {List, ListItem} from "./list.js"
 
 const {button, div, input, span, i, h1, p, label, hr} = dom.tags;
 
-const test = (newItem) => {
+const listTest = (newItem) => {
 
     // Creates List component and sets 'change' handler
     const list = new List();
@@ -51,13 +51,27 @@ const test = (newItem) => {
     )
 }
 
-dom.add(document.body, test((item, text) => {
+const listTestStr = () => {
 
+    return listTest((item, text) => {
+        item.value = "["+text+"]";
+    });
+}
+
+const listTestSpan = () => {
+
+    return listTest((item, text) => {
+        const dtime = new Date().toISOString().slice(11,23);
+        item.value = span(i({style: 'color: blue'},dtime), ":  ", text);
+    });
+}
+
+dom.add(document.body, listTest((item, text) => {
     item.value = "["+text+"]";
 }));
 dom.add(document.body, p())
 
-dom.add(document.body, test((item, text) => {
+dom.add(document.body, listTest((item, text) => {
 
     const dtime = new Date().toISOString().slice(11,23);
     item.value = span(i({style: 'color: blue'},dtime), ":  ", text);

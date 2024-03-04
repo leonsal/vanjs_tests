@@ -192,17 +192,18 @@ export class List extends HTMLElement {
         }
     }
 
-    // Overrides node append child, to append specified element in the component shadow dom
+    // Appends new item to the list
     appendItem(item) {
 
         return this.shadowRoot.firstChild.append(item);
     }
 
-    // Overrides node remove child, to remove specified element from the component shadow dom
+    // Removes specified item from the list
     removeItem(item) {
 
         return this.shadowRoot.firstChild.removeChild(item);
     }
+
 
     // Called by browser when component is inserted in the page
     connectedCallback() {
